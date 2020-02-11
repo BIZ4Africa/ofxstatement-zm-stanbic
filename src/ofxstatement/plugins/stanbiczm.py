@@ -48,13 +48,13 @@ class StanbicZmParser(CsvStatementParser):
         next(reader, None)
         return reader
 
-    def fix_amount(self, value):
-        dbt_re = r"(.*)(Dr)$"
-        cdt_re = r"Cr$"
-        dbt_subst = "-\\1"
-        cdt_subst = ""
-        result = re.sub(dbt_re, dbt_subst, value, 0)
-        return re.sub(cdt_re, cdt_subst, result, 0)
+    # def fix_amount(self, value):
+    #     dbt_re = r"(.*)(Dr)$"
+    #     cdt_re = r"Cr$"
+    #     dbt_subst = "-\\1"
+    #     cdt_subst = ""
+    #     result = re.sub(dbt_re, dbt_subst, value, 0)
+    #     return re.sub(cdt_re, cdt_subst, result, 0)
 
 
     def parse_record(self, line):
