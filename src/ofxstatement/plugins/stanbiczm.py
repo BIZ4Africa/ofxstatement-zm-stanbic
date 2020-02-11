@@ -22,12 +22,11 @@ class StanbicZmParser(CsvStatementParser):
 
     date_format = "%d/%m/%Y"
     mappings = {
-        # 'check_no': 3,
         'date': 1,
         'refnum': 0,
         'memo': 2,
         'amount': 5,
-        'id': 3
+        'id': 0
     }
     
     def parse(self):
@@ -48,13 +47,8 @@ class StanbicZmParser(CsvStatementParser):
         next(reader, None)
         return reader
 
-    # def fix_amount(self, value):
-    #     dbt_re = r"(.*)(Dr)$"
-    #     cdt_re = r"Cr$"
-    #     dbt_subst = "-\\1"
-    #     cdt_subst = ""
-    #     result = re.sub(dbt_re, dbt_subst, value, 0)
-    #     return re.sub(cdt_re, cdt_subst, result, 0)
+    def fix_amount(self, value):
+        return D(value.replace(',', '.').replace(' ', ''))
 
 
     def parse_record(self, line):
@@ -64,22 +58,15 @@ class StanbicZmParser(CsvStatementParser):
         if line[2] == "":
             return None
         elif line[2] == "Opening balance":
-            self.statement.start_balance = D(line[6])
+            self.statement.start_balance = self.fix_amount(line[6])
             return None
         elif line[2] == "Closing balance":
             return None
 
         if line[4]:
-            line[5] = -line[4]
+            line[5] = "-" + line[4]
 
-        line[0] = random.randrange(sys.maxsize)
-        # date = line[0]
-        # date_value = line[1]
-        # description = line[2]
-        # transaction_id = line[3]
-        # currency = line[4]
-        # amount = self.fix_amount(line[5])
-        # line[5] = amount
+        line[0] = str(random.randrange(sys.maxsize))
 
         stmtline = super(StanbicZmParser, self).parse_record(line)
         stmtline.trntype = 'DEBIT' if stmtline.amount < 0 else 'CREDIT'

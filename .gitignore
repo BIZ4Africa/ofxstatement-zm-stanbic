@@ -1,3 +1,4 @@
 /src/*.egg-info/
 /dist/
 /build/
+/src/output.ofx
