@@ -1,0 +1,8 @@
+Transaction,,,,,,
+"",Value date,,Transaction description,Debits,Credits,Balance
+date,,,,,,
+"",07/02/2020,Opening balance,,,,"59 258,71"
+07/02/2020,07/02/2020,AT20038ZM0126671 INTERNAL TRANSFER Fact 226 - T.TE 200207 122017,,"600,00",,"58 658,71"
+"",07/02/2020,Closing balance,,,,"58 658,71"
+Debits,"600,00"
+Credits,"0,00"
