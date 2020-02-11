@@ -54,6 +54,8 @@ class StanbicZmParser(CsvStatementParser):
         """Parse given transaction line and return StatementLine object
         """
 
+        if len(line) <= 2:
+            return None
         if line[2] == "":
             return None
         elif line[2] == "Opening balance":
