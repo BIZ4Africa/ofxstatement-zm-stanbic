@@ -10,7 +10,7 @@ from distutils.core import setup
 
 import unittest
 
-version = "0.1.3"
+version = "1.0.0"
 
 with open('README.md') as f:
     long_description = f.read()
@@ -20,7 +20,8 @@ setup(name='ofxstatement-zm-stanbic',
       author="Vincent Luba",
       author_email="vincent@biz-4-africa.com",
       url="https://github.com/BIZ4Africa/ofxstatement-zm-stanbic",
-      description=("OFXStatement plugin for Stanbic (Zambia)"),
+      download_url="https://github.com/BIZ4Africa/ofxstatement-zm-stanbic/archive/v1.0.zip",
+      description=("OFXStatement plugin for Stanbic Bank (Zambia)"),
       long_description=open("README.md").read(),
       long_description_content_type='text/markdown',
       license="GPLv3",

@@ -1,9 +1,8 @@
 import csv
-import re
-from decimal import Decimal as D
-
 import random
 import sys
+from decimal import Decimal as D
+
 from ofxstatement import statement
 from ofxstatement.parser import CsvStatementParser
 from ofxstatement.plugin import Plugin
