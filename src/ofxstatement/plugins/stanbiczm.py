@@ -4,6 +4,9 @@ import sys
 from decimal import Decimal as D
 
 from ofxstatement import statement
+from ofxstatement.statement import generate_transaction_id
+from ofxstatement.statement import generate_unique_transaction_id
+
 from ofxstatement.parser import CsvStatementParser
 from ofxstatement.plugin import Plugin
 
@@ -27,7 +30,8 @@ class StanbicZmParser(CsvStatementParser):
         'amount': 5,
         'id': 0
     }
-    
+    unique_id_set = set()
+
     def parse(self):
         """Main entry point for parsers
 
@@ -47,7 +51,7 @@ class StanbicZmParser(CsvStatementParser):
         return reader
 
     def fix_amount(self, value):
-        return D(value.replace(',', '.').replace(' ', ''))
+        return value.replace(',', '').replace(' ', '')
 
 
     def parse_record(self, line):
@@ -59,17 +63,25 @@ class StanbicZmParser(CsvStatementParser):
         if line[2] == "":
             return None
         elif line[2] == "Opening balance":
-            self.statement.start_balance = self.fix_amount(line[6])
+            self.statement.start_balance = D(self.fix_amount(line[6]))
             return None
         elif line[2] == "Closing balance":
+            return None
+
+        if not line[0] and not line[1]:
+            #Continuation of previous line
+            idx = len(self.statement.lines) - 1
+            self.statement.lines[idx].memo = self.statement.lines[idx].memo + line[2]
             return None
 
         if line[4]:
             line[5] = "-" + line[4]
 
-        line[0] = str(random.randrange(sys.maxsize))
+        if line[5]:
+            line[5] = self.fix_amount(line[5])
 
         stmtline = super(StanbicZmParser, self).parse_record(line)
         stmtline.trntype = 'DEBIT' if stmtline.amount < 0 else 'CREDIT'
+        stmtline.id = generate_unique_transaction_id(stmtline, self.unique_id_set)
 
         return stmtline
