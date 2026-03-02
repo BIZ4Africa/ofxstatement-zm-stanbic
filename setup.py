@@ -1,28 +1,22 @@
 #!/usr/bin/python3
 """Setup"""
 
-import os
+from setuptools import find_packages, setup
 
-from setuptools import find_packages
-from setuptools.command.test import test as TestCommand
-from distutils.core import setup
+VERSION = "1.1.2"
 
-import unittest
-
-version = "1.1.2"
-
-with open("README.md") as f:
+with open("README.md", encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
     name="ofxstatement-zm-stanbic",
-    version=version,
+    version=VERSION,
     author="Vincent Luba",
     author_email="vincent@biz-4-africa.com",
     url="https://github.com/BIZ4Africa/ofxstatement-zm-stanbic",
     download_url="https://github.com/BIZ4Africa/ofxstatement-zm-stanbic/archive/v1.1.1.zip",
     description=("OFXStatement plugin for Stanbic Bank (Zambia)"),
-    long_description=open("README.md").read(),
+    long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     license="GPLv3",
     keywords=["ofx", "banking", "statement"],
