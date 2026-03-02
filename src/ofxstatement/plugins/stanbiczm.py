@@ -1,35 +1,34 @@
 import csv
-import random
-import sys
 from decimal import Decimal as D
 
 from ofxstatement import statement
-from ofxstatement.statement import generate_transaction_id
-from ofxstatement.statement import generate_unique_transaction_id
-
 from ofxstatement.parser import CsvStatementParser
 from ofxstatement.plugin import Plugin
+from ofxstatement.statement import generate_unique_transaction_id
 
 
 class StanbicZmPlugin(Plugin):
-    """Stanbic Zambia Plugin
-    """
+    """Stanbic Zambia Plugin"""
 
     def get_parser(self, filename):
-        f = open(filename, 'r', encoding=self.settings.get("charset", "UTF-8"))
+        """Get parser for Stanbic statement file
+
+        Args:
+            filename: Path to the bank statement file
+
+        Returns:
+            StanbicZmParser instance
+        """
+        f = open(filename, "r", encoding=self.settings.get("charset", "UTF-8"))
         parser = StanbicZmParser(f)
         return parser
 
+
 class StanbicZmParser(CsvStatementParser):
+    """Parser for Stanbic Zambia bank statements"""
 
     date_format = "%d/%m/%Y"
-    mappings = {
-        'date': 1,
-        'refnum': 0,
-        'memo': 2,
-        'amount': 5,
-        'id': 0
-    }
+    mappings = {"date": 1, "refnum": 0, "memo": 2, "amount": 5, "id": 0}
     unique_id_set = set()
 
     def parse(self):
@@ -43,45 +42,60 @@ class StanbicZmParser(CsvStatementParser):
         return stmt
 
     def split_records(self):
-        """Return iterable object consisting of a line per transaction
-        """
-        
-        reader = csv.reader(self.fin, delimiter=',')
-        next(reader, None)
+        """Return iterable object consisting of a line per transaction"""
+        reader = csv.reader(self.fin, delimiter=",")
+        next(reader, None)  # Skip header
         return reader
 
     def fix_amount(self, value):
-        return value.replace(',', '').replace(' ', '')
+        """Clean amount string by removing formatting characters
 
+        Args:
+            value: Amount string with potential comma/space separators
+
+        Returns:
+            Cleaned amount string
+        """
+        return value.replace(",", "").replace(" ", "")
 
     def parse_record(self, line):
-        """Parse given transaction line and return StatementLine object
-        """
-
+        """Parse given transaction line and return StatementLine object"""
+        # Skip lines with insufficient data
         if len(line) <= 2:
             return None
+
         if line[2] == "":
             return None
-        elif line[2] == "Opening balance":
-            self.statement.start_balance = D(self.fix_amount(line[6]))
-            return None
-        elif line[2] == "Closing balance":
+
+        # Handle opening balance
+        if line[2] == "Opening balance":
+            if len(line) > 6:
+                self.statement.start_balance = D(self.fix_amount(line[6]))
             return None
 
+        # Handle closing balance
+        if line[2] == "Closing balance":
+            return None
+
+        # Handle continuation of previous line memo
         if not line[0] and not line[1]:
-            #Continuation of previous line
-            idx = len(self.statement.lines) - 1
-            self.statement.lines[idx].memo = self.statement.lines[idx].memo + line[2]
+            if len(self.statement.lines) > 0:
+                idx = len(self.statement.lines) - 1
+                self.statement.lines[idx].memo = (
+                    self.statement.lines[idx].memo + " " + line[2]
+                )
             return None
 
-        if line[4]:
-            line[5] = "-" + line[4]
+        # Convert debit column to negative amount
+        if len(line) > 5:
+            if line[4]:
+                line[5] = "-" + line[4]
 
-        if line[5]:
-            line[5] = self.fix_amount(line[5])
+            if line[5]:
+                line[5] = self.fix_amount(line[5])
 
         stmtline = super(StanbicZmParser, self).parse_record(line)
-        stmtline.trntype = 'DEBIT' if stmtline.amount < 0 else 'CREDIT'
+        stmtline.trntype = "DEBIT" if stmtline.amount < 0 else "CREDIT"
         stmtline.id = generate_unique_transaction_id(stmtline, self.unique_id_set)
 
         return stmtline
